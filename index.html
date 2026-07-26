@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Accuzza &middot; URL Shortener</title>
+<style>
+:root{--bg:#f1f5f9;--surface:#fff;--primary:#4f46e5;--primary-hover:#3730a3;--danger:#ef4444;--danger-hover:#dc2626;--text:#1e293b;--text-secondary:#64748b;--border:#e2e8f0;--radius:12px;--font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100dvh}
+input,button{font-family:var(--font)}
+input{width:100%;padding:10px 14px;font-size:15px;border:1px solid var(--border);border-radius:8px;outline:none;transition:border-color .15s}
+input:focus{border-color:var(--primary)}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 20px;font-size:14px;font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:background .15s;color:#fff}
+.btn-primary{background:var(--primary)}.btn-primary:hover{background:var(--primary-hover)}
+.btn-danger{background:var(--danger)}.btn-danger:hover{background:var(--danger-hover)}
+.btn-block{width:100%}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:4px}
+.form-row{display:flex;gap:8px}
+.form-row .form-group{flex:1}
+.error{color:var(--danger);font-size:13px;margin-top:6px;min-height:18px}
+/* Login */
+.login-wrap{display:flex;justify-content:center;align-items:center;min-height:100dvh;padding:20px}
+.login-box{background:var(--surface);border-radius:var(--radius);padding:32px;box-shadow:0 1px 4px rgba(0,0,0,.06);width:100%;max-width:360px;text-align:center}
+.login-box h1{font-size:24px;margin-bottom:4px}
+.login-box p{color:var(--text-secondary);font-size:14px;margin-bottom:20px}
+.login-box input{margin-bottom:0}
+.login-box .error{margin-top:10px}
+/* Dashboard */
+.container{max-width:800px;margin:0 auto;padding:24px 16px}
+.header h1{font-size:24px;font-weight:700;display:flex;align-items:center;gap:8px}
+.header p{color:var(--text-secondary);margin-bottom:20px;font-size:14px}
+.card{background:var(--surface);border-radius:var(--radius);padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:16px}
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--border)}
+th{font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px}
+.url-cell{max-width:200px}
+.url-inner{display:flex;align-items:center;gap:4px}
+.url-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.short-url{color:var(--primary);text-decoration:none;font-weight:500}
+.short-url:hover{text-decoration:underline}
+.short-inner{display:flex;align-items:center;gap:4px}
+.short-code{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.empty{text-align:center;padding:40px 20px;color:var(--text-secondary);font-size:14px}
+.btn-copy{display:inline-flex;align-items:center;padding:2px 8px;font-size:11px;font-weight:500;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text-secondary);cursor:pointer;transition:all .15s;font-family:var(--font);vertical-align:middle;margin-left:4px}
+.btn-copy:hover{border-color:var(--primary);color:var(--primary)}
+@media(max-width:600px){
+.container{padding:16px 12px}.card{padding:14px}.form-row{flex-direction:column}
+th,td{padding:6px 4px;font-size:12px}.header h1{font-size:20px}.url-cell{max-width:120px}
+}
+</style>
+</head>
+<body>
+<div id="loginView" class="login-wrap" style="display:none">
+<div class="login-box">
+<h1>Accuzza</h1>
+<p>Master password required to manage short links.</p>
+<div class="form-group"><input type="password" id="loginPwd" placeholder="Master password" autocomplete="current-password"></div>
+<button class="btn btn-primary btn-block" onclick="doLogin()">Unlock</button>
+<div class="error" id="loginError"></div>
+</div>
+</div>
+
+<div id="dashboardView" style="display:none">
+<div class="container">
+<div class="header">
+<h1>Accuzza</h1>
+<p>Create and manage short links.</p>
+</div>
+
+<div class="card">
+<div class="form-row">
+<div class="form-group" style="flex:3"><label>Target URL</label><input type="url" id="inputUrl" placeholder="https://example.com/long-url"></div>
+<div class="form-group"><label>Custom code</label><input type="text" id="inputCode" placeholder="optional" maxlength="32"></div>
+<div class="form-group"><label>Password</label><input type="text" id="inputPwd" placeholder="optional" autocomplete="off"></div>
+</div>
+<button class="btn btn-primary btn-block" onclick="createLink()" style="margin-top:4px">Shorten</button>
+<div class="error" id="createError"></div>
+</div>
+
+<div class="card">
+<div class="table-wrap">
+<table>
+<thead><tr><th>Short URL</th><th>Target</th><th>Clicks</th><th>Protected</th><th>Created</th><th></th></tr></thead>
+<tbody id="linksBody"></tbody>
+</table>
+</div>
+<div class="empty" id="emptyState">No links yet. Create one above.</div>
+</div>
+</div>
+</div>
+
+<script>
+let authenticated=false
+
+async function api(path,opts){
+const r=await fetch(path,{...opts,headers:{'Content-Type':'application/json',...((opts&&opts.headers)||{})},credentials:'same-origin'})
+if(r.status===401){authenticated=false;showLogin();throw new Error('Unauthorized')}
+if(!r.ok){const d=await r.json();throw new Error(d.detail||'Request failed')}
+return r.json()
+}
+
+function showLogin(){
+document.getElementById('loginView').style.display=''
+document.getElementById('dashboardView').style.display='none'
+}
+
+function showDashboard(){
+document.getElementById('loginView').style.display='none'
+document.getElementById('dashboardView').style.display=''
+loadLinks()
+}
+
+async function doLogin(){
+const p=document.getElementById('loginPwd').value
+const e=document.getElementById('loginError')
+if(!p){e.textContent='Enter password';return}
+e.textContent=''
+try{
+const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:p}),credentials:'same-origin'})
+if(!r.ok){const d=await r.json();e.textContent=d.detail||'Login failed';return}
+document.getElementById('loginPwd').value='';authenticated=true;showDashboard()
+}catch(er){e.textContent='Connection error'}
+}
+
+async function loadLinks(){
+try{
+const d=await api('/api/links')
+const t=document.getElementById('linksBody')
+const em=document.getElementById('emptyState')
+if(!d.links||!d.links.length){t.innerHTML='';em.style.display='';return}
+em.style.display='none'
+t.innerHTML=d.links.map(function(l){
+return '<tr><td><div class="short-inner"><a class="short-url short-code" href="/'+l.code+'" target="_blank">/'+l.code+'</a><button class="btn-copy" onclick="copyLink(event,\''+l.code+'\')">Copy</button></div></td>'+
+'<td class="url-cell" title="'+esc(l.url)+'"><div class="url-inner"><span class="url-text">'+esc(l.url)+'</span><button class="btn-copy" data-url="'+esc(l.url)+'" onclick="copyText(this)">Copy</button></div></td>'+
+'<td>'+l.click_count+'</td>'+
+'<td>'+(l.has_password?'&#128274;':'&ndash;')+'</td>'+
+'<td>'+l.created_at.slice(0,10)+'</td>'+
+'<td><button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteLink('+l.id+')">Delete</button></td></tr>'
+}).join('')
+}catch(e){}
+}
+
+async function createLink(){
+const url=document.getElementById('inputUrl').value.trim()
+const code=document.getElementById('inputCode').value.trim()||null
+const pwd=document.getElementById('inputPwd').value||null
+const e=document.getElementById('createError')
+if(!url){e.textContent='URL is required';return}
+e.textContent=''
+try{
+await api('/api/links',{method:'POST',body:JSON.stringify({url:url,code:code,password:pwd})})
+document.getElementById('inputUrl').value=''
+document.getElementById('inputCode').value=''
+document.getElementById('inputPwd').value=''
+loadLinks()
+}catch(er){e.textContent=er.message}
+}
+
+async function deleteLink(id){
+if(!confirm('Delete this link?'))return
+try{await api('/api/links/'+id,{method:'DELETE'});loadLinks()}catch(e){}
+}
+
+function copyLink(e,code){var btn=e.target.tagName==='BUTTON'?e.target:e.target.closest('button');var u=window.location.origin+'/'+code;navigator.clipboard.writeText(u).then(function(){var t=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=t},1500)}).catch(function(){})}
+function copyText(btn){var url=btn.getAttribute('data-url');navigator.clipboard.writeText(url).then(function(){var t=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=t},1500)}).catch(function(){})}
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+;(async function(){
+try{await api('/api/check');authenticated=true;showDashboard()}catch(e){showLogin()}
+})()
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+services:
+  accuzza:
+    build: .
+    container_name: accuzza
+    ports:
+      - "8765:8765"
+    environment:
+      - MASTER_PASSWORD=changeme
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
