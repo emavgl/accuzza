@@ -12,8 +12,6 @@ Set the `MASTER_PASSWORD` environment variable in `docker-compose.yaml`, then:
 docker-compose up -d
 ```
 
-Visit [https://accuzza.viglianisi.ovh](https://accuzza.viglianisi.ovh) and enter the master password to manage short links.
-
 ## Features
 
 - Custom short codes (or auto-generated 6-char)
